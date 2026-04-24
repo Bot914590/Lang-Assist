@@ -2,7 +2,7 @@
 
 MVP приложения для изучения языков с анализом текстов, токенизацией, и системой повторения карточек (SM-2).
 
-## 🚀 Быстрый старт с Docker
+## старт с Docker
 
 ```bash
 # Windows
@@ -21,7 +21,7 @@ docker-compose up -d --build
 - **Go Analyzer**: http://localhost:8080
 - **Go Simplifier**: http://localhost:8081
 
-📖 Полная инструкция: [DOCKER_INSTRUCTION.md](DOCKER_INSTRUCTION.md)
+ Полная инструкция: [DOCKER_INSTRUCTION.md](DOCKER_INSTRUCTION.md)
 
 ## Архитектура
 
@@ -92,7 +92,7 @@ docker-compose logs -f
 docker-compose down
 ```
 
-📖 Полная документация: [DOCKER_INSTRUCTION.md](DOCKER_INSTRUCTION.md), [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
+ Полная документация: [DOCKER_INSTRUCTION.md](DOCKER_INSTRUCTION.md), [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
 
 ### Вариант 2: Локальный запуск
 
@@ -202,45 +202,3 @@ curl -X POST http://localhost:8080/analyze \
 ```bash
 curl http://localhost:8080/health
 ```
-
-## Структура проекта
-
-```
-Language_assist/
-├── app/
-│   ├── main.py           # Точка входа FastAPI
-│   └── database.py       # Конфигурация БД
-├── models/
-│   └── models.py         # SQLAlchemy модели
-├── routes/
-│   ├── texts.py          # Маршруты текстов
-│   ├── users.py          # Маршруты пользователей
-│   ├── vocabulary.py     # Маршруты словаря
-│   └── flashcards.py     # Маршруты карточек
-├── schemas/
-│   ├── text.py           # Pydantic схемы текстов
-│   ├── user.py           # Pydantic схемы пользователей
-│   ├── vocabulary.py     # Pydantic схемы словаря
-│   └── flashcards.py     # Pydantic схемы карточек
-├── services/
-│   ├── analyze.py        # Сервис анализа текстов
-│   ├── go_client.py      # Клиент Go микросервиса
-│   ├── sm2.py            # Алгоритм SM-2
-│   └── embeddings.py     # Работа с эмбеддингами
-├── analyzer-go/
-│   └── main.go           # Go микросервис
-├── docker-compose.yml
-├── Dockerfile.api
-├── Dockerfile.analyzer
-└── requirements.txt
-```
-
-## Функционал MVP
-
-1. ✅ Загрузка/вставка текста
-2. ✅ Анализ текста: токенизация, лемматизация
-3. ✅ Определение неизвестных слов (по HSK уровню)
-4. ✅ Генерация карточек из текста
-5. ✅ Система повторения SM-2
-6. ✅ Словарь пользователя
-7. ✅ Семантический поиск (эмбеддинги)
