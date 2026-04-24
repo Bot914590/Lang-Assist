@@ -1,0 +1,52 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+simplifier
+dist/
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Dependency directories
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data files (слишком большие для репозитория)
+data/*.bin
+data/cache/*.gob
+!data/.gitkeep
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+server.log
+
+# Temporary files
+tmp/
+temp/
+
+# Coverage
+coverage.out
+
+# Node modules (если будут frontend компоненты)
+node_modules/

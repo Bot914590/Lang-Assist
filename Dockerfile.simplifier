@@ -1,0 +1,32 @@
+# Dockerfile для Go Simplifier
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+
+# Копируем go.mod и go.sum
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Копируем исходный код
+COPY . .
+
+# Компилируем
+RUN CGO_ENABLED=0 GOOS=linux go build -o simplifier .
+
+# Финальный образ
+FROM alpine:latest
+
+WORKDIR /app
+
+# Копируем скомпилированный бинарник
+COPY --from=builder /app/simplifier .
+
+# Создаём директорию для данных
+RUN mkdir -p data
+
+# Экспонируем порт
+EXPOSE 8081
+
+# Команда запуска
+ENV PORT=8081
+CMD ["./simplifier"]

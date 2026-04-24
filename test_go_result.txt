@@ -1,0 +1,7 @@
+Status: ok
+Tokens count: 3
+First token: {"value": "你", "lemma": "你", "frequency": 1, "positions": [0], "hsk": 1, "is_known": true}
+All tokens:
+  你: positions=[0]
+  好: positions=[1]
+  吗: positions=[2]

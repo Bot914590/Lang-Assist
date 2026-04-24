@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  simplifier:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - API_KEY=${API_KEY:-sk_live_dev-key-change-in-production}
+      - DATA_DIR=/app/data
+      - MAX_HSK_LEVEL=4
+      - NO_EMBEDDINGS=false
+      - LOG_LEVEL=info
+      - RATE_LIMIT_FREE=100
+      - RATE_LIMIT_BASIC=1000
+      - RATE_LIMIT_PRO=10000
+      - RATE_LIMIT_ENTERPRISE=100000
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Nginx reverse proxy (опционально для production)
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #     - ./ssl:/etc/nginx/ssl
+  #   depends_on:
+  #     - simplifier
+  #   restart: unless-stopped

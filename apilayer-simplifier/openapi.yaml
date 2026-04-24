@@ -1,0 +1,639 @@
+openapi: 3.0.0
+info:
+  title: Chinese Text Simplifier API
+  description: |
+    Powerful API for simplifying Chinese texts to target HSK levels using semantic analysis and vector embeddings.
+
+    ## Features
+
+    - **Text Simplification** — Automatic replacement of complex words with simpler alternatives
+    - **Semantic Search** — Synonym matching using vector embeddings (Tencent AILab)
+    - **HSK Levels** — Support for all HSK levels (1-6)
+    - **Text Analysis** — Tokenization, word level detection, frequency analysis
+
+    ## Authentication
+
+    All API requests must include the `X-API-Key` header:
+
+    ```bash
+    -H "X-API-Key: your-api-key"
+    ```
+
+    ## Pricing Tiers
+
+    | Tier | Requests per Day | Requests per Minute |
+    |------|------------------|---------------------|
+    | Free | 100 | 10 |
+    | Basic | 1,000 | 50 |
+    | Pro | 10,000 | 200 |
+    | Enterprise | 100,000+ | 1000+ |
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@apilayer.com
+    url: https://apilayer.com/marketplace/chinese-simplifier-api
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.apilayer.com/chinese-simplifier
+    description: Production server
+  - url: http://localhost:8081
+    description: Local development server
+
+tags:
+  - name: Simplify
+    description: Chinese text simplification
+  - name: Analyze
+    description: Text analysis
+  - name: Word
+    description: Word information
+  - name: Health
+    description: API availability check
+
+paths:
+  /simplify:
+    post:
+      tags:
+        - Simplify
+      summary: Simplify Text
+      description: |
+        Simplifies Chinese text to target HSK level by replacing complex words with semantically similar simpler alternatives.
+
+        If no replacement is found for a complex word, it is marked as `[COMPLEX:level]`.
+      operationId: simplifyText
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimplifyRequest'
+            examples:
+              example1:
+                summary: Simplify to HSK 2
+                value:
+                  text: "这个经济问题很复杂"
+                  target_level: 2
+              example2:
+                summary: Simplify to HSK 1
+                value:
+                  text: "她很美丽"
+                  target_level: 1
+      responses:
+        '200':
+          description: Successful simplification
+          headers:
+            X-RateLimit-Limit:
+              description: Daily request limit
+              schema:
+                type: integer
+            X-RateLimit-Remaining:
+              description: Remaining requests
+              schema:
+                type: integer
+            X-RateLimit-Reset:
+              description: Limit reset time (Unix timestamp)
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimplifyResponse'
+              examples:
+                example1:
+                  summary: Successful simplification with replacement
+                  value:
+                    status: "ok"
+                    original_text: "她很美丽"
+                    simplified_text: "她很漂亮"
+                    replacements:
+                      - original: "美丽"
+                        replacement: "漂亮"
+                        reason: "HSK level too high"
+                        hsk_level: 4
+                        similarity: 0.70
+                    target_level: 2
+                    total_tokens: 3
+                    replaced_count: 1
+                example2:
+                  summary: Word without replacement
+                  value:
+                    status: "ok"
+                    original_text: "这个经济问题很复杂"
+                    simplified_text: "这个经济问题很 [COMPLEX:4]"
+                    replacements:
+                      - original: "复杂"
+                        replacement: "[COMPLEX:4]"
+                        reason: "HSK level too high, no similar word found"
+                        hsk_level: 4
+                        similarity: 0
+                    target_level: 2
+                    total_tokens: 6
+                    replaced_count: 1
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_text:
+                  summary: Missing text
+                  value:
+                    error:
+                      code: "MISSING_PARAMETER"
+                      message: "Field 'text' is required"
+                      status_code: 400
+                invalid_level:
+                  summary: Invalid HSK level
+                  value:
+                    error:
+                      code: "INVALID_PARAMETER"
+                      message: "Field 'target_level' must be between 1 and 6"
+                      status_code: 400
+        '401':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "INVALID_API_KEY"
+                  message: "Invalid API key"
+                  status_code: 401
+        '429':
+          description: Rate limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              description: Daily request limit
+              schema:
+                type: integer
+            X-RateLimit-Remaining:
+              description: Remaining requests (0)
+              schema:
+                type: integer
+            X-RateLimit-Reset:
+              description: Limit reset time (Unix timestamp)
+              schema:
+                type: integer
+            Retry-After:
+              description: Seconds until limit reset
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "RATE_LIMIT_EXCEEDED"
+                  message: "Too many requests"
+                  status_code: 429
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "HSK_NOT_LOADED"
+                  message: "HSK dictionary not loaded"
+                  status_code: 500
+
+  /analyze:
+    post:
+      tags:
+        - Analyze
+      summary: Analyze Text
+      description: |
+        Analyzes text: tokenization, HSK word level detection, frequency analysis.
+
+        Supports Chinese and European languages.
+      operationId: analyzeText
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeRequest'
+            examples:
+              example1:
+                summary: Chinese text analysis
+                value:
+                  text: "我喜欢学习中文"
+                  lang: "zh"
+                  user_level: 2
+              example2:
+                summary: English text analysis
+                value:
+                  text: "I like learning Chinese"
+                  lang: "en"
+                  user_level: 0
+      responses:
+        '200':
+          description: Successful analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzeResponse'
+              examples:
+                example1:
+                  summary: Analysis result
+                  value:
+                    status: "ok"
+                    tokens_count: 7
+                    tokens:
+                      - value: "我"
+                        lemma: "我"
+                        frequency: 1
+                        positions: [0]
+                        hsk: 1
+                        is_known: true
+                      - value: "喜欢"
+                        lemma: "喜欢"
+                        frequency: 1
+                        positions: [1]
+                        hsk: 3
+                        is_known: false
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /word/info:
+    get:
+      tags:
+        - Word
+      summary: Word Information
+      description: |
+        Get word information: HSK level, pinyin, translations.
+      operationId: getWordInfo
+      parameters:
+        - name: word
+          in: query
+          required: true
+          description: Chinese word
+          schema:
+            type: string
+          example: "学习"
+      responses:
+        '200':
+          description: Word information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WordInfoResponse'
+              example:
+                word: "学习"
+                hsk_level: 3
+                pinyin: "xué xí"
+                strokes: "8"
+                translations:
+                  eng: ["to learn", "to study"]
+                  rus: ["учить", "изучать"]
+                has_embedding: true
+        '400':
+          description: Missing word parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Dictionary not loaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /word/similar:
+    get:
+      tags:
+        - Word
+      summary: Similar Words
+      description: |
+        Find semantically similar words simpler than specified.
+
+        Uses cosine similarity of vector embeddings.
+      operationId: getSimilarWords
+      parameters:
+        - name: word
+          in: query
+          required: true
+          description: Source word
+          schema:
+            type: string
+          example: "美丽"
+        - name: max_level
+          in: query
+          description: Maximum HSK level
+          schema:
+            type: integer
+            default: 4
+            minimum: 1
+            maximum: 6
+          example: 2
+        - name: top_k
+          in: query
+          description: Number of results
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+          example: 5
+      responses:
+        '200':
+          description: List of similar words
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimilarWordsResponse'
+              example:
+                word: "美丽"
+                max_level: 2
+                similar:
+                  - word: "漂亮"
+                    similarity: 0.70
+                    hsk_level: 1
+                  - word: "好"
+                    similarity: 0.55
+                    hsk_level: 1
+        '400':
+          description: Missing word parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Embeddings not loaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health Check
+      description: Check service availability and component status.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: "ok"
+                hsk_loaded: true
+                embeddings: true
+                vector_size: 200
+                max_hsk_level: 4
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+  schemas:
+    SimplifyRequest:
+      type: object
+      required:
+        - text
+        - target_level
+      properties:
+        text:
+          type: string
+          description: Text to simplify (Chinese characters)
+          example: "这个经济问题很复杂"
+        target_level:
+          type: integer
+          description: Target HSK level (1-6)
+          minimum: 1
+          maximum: 6
+          example: 2
+        lang:
+          type: string
+          description: Language code (default: "zh")
+          default: "zh"
+          example: "zh"
+
+    SimplifyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "ok"
+        original_text:
+          type: string
+          example: "她很美丽"
+        simplified_text:
+          type: string
+          example: "她很漂亮"
+        replacements:
+          type: array
+          items:
+            $ref: '#/components/schemas/WordReplacement'
+        target_level:
+          type: integer
+          example: 2
+        total_tokens:
+          type: integer
+          example: 3
+        replaced_count:
+          type: integer
+          example: 1
+
+    WordReplacement:
+      type: object
+      properties:
+        original:
+          type: string
+          example: "美丽"
+        replacement:
+          type: string
+          example: "漂亮"
+        reason:
+          type: string
+          example: "HSK level too high"
+        hsk_level:
+          type: integer
+          example: 4
+        similarity:
+          type: number
+          format: float
+          example: 0.70
+
+    AnalyzeRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: Text to analyze
+          example: "我喜欢学习中文"
+        lang:
+          type: string
+          description: Language code
+          default: "zh"
+          example: "zh"
+        user_level:
+          type: integer
+          description: User HSK level (0-6)
+          minimum: 0
+          maximum: 6
+          default: 0
+          example: 2
+
+    AnalyzeResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "ok"
+        tokens_count:
+          type: integer
+          example: 7
+        tokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/Token'
+
+    Token:
+      type: object
+      properties:
+        value:
+          type: string
+          example: "我"
+        lemma:
+          type: string
+          example: "我"
+        frequency:
+          type: integer
+          example: 1
+        positions:
+          type: array
+          items:
+            type: integer
+          example: [0]
+        hsk:
+          type: integer
+          example: 1
+        is_known:
+          type: boolean
+          example: true
+
+    WordInfoResponse:
+      type: object
+      properties:
+        word:
+          type: string
+        hsk_level:
+          type: integer
+        pinyin:
+          type: string
+        strokes:
+          type: string
+        translations:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        has_embedding:
+          type: boolean
+
+    SimilarWordsResponse:
+      type: object
+      properties:
+        word:
+          type: string
+        max_level:
+          type: integer
+        similar:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimilarWord'
+
+    SimilarWord:
+      type: object
+      properties:
+        word:
+          type: string
+        similarity:
+          type: number
+          format: float
+        hsk_level:
+          type: integer
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "ok"
+        hsk_loaded:
+          type: boolean
+        embeddings:
+          type: boolean
+        vector_size:
+          type: integer
+        max_hsk_level:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              enum:
+                - BAD_REQUEST
+                - INVALID_JSON
+                - MISSING_PARAMETER
+                - INVALID_PARAMETER
+                - UNAUTHORIZED
+                - INVALID_API_KEY
+                - FORBIDDEN
+                - NOT_FOUND
+                - RATE_LIMIT_EXCEEDED
+                - SERVICE_UNAVAILABLE
+                - INTERNAL_SERVER_ERROR
+                - HSK_NOT_LOADED
+                - EMBEDDINGS_NOT_LOADED
+                - METHOD_NOT_ALLOWED
+              example: "INVALID_PARAMETER"
+            message:
+              type: string
+              example: "Field 'target_level' must be between 1 and 6"
+            details:
+              type: object
+              nullable: true
+              description: Additional error details
+            status_code:
+              type: integer
+              example: 400
+
+security:
+  - ApiKeyAuth: []
