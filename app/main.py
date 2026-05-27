@@ -7,7 +7,6 @@ from routes import texts, users, vocabulary, flashcards
 
 app = FastAPI(title="Language Assist API", version="1.0.0")
 
-# CORS middleware
 cors_origins = os.getenv("CORS_ORIGINS", "*")
 if cors_origins == "*":
     allow_origins = ["*"]
@@ -16,7 +15,7 @@ else:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allow_origins,  # Для продакшена указать конкретные origins
+    allow_origins=allow_origins, 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
