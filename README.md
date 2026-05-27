@@ -2,7 +2,7 @@
 
 MVP приложения для изучения языков с анализом текстов, токенизацией, и системой повторения карточек (SM-2).
 
-## старт с Docker
+## старт 
 
 ```bash
 # Windows
@@ -20,8 +20,6 @@ docker-compose up -d --build
 - **Docs (Swagger)**: http://localhost:8000/docs
 - **Go Analyzer**: http://localhost:8080
 - **Go Simplifier**: http://localhost:8081
-
- Полная инструкция: [DOCKER_INSTRUCTION.md](DOCKER_INSTRUCTION.md)
 
 ## Архитектура
 
@@ -53,7 +51,7 @@ docker-compose up -d --build
 - JWT аутентификация
 
 ### 2. Go Analyzer (порт 8080)
-- Токенизация текстов (китайский, европейские языки)
+- Токенизация текстов (китайский)
 - Лемматизация
 - Определение уровня HSK
 - Выделение известных/незнакомых слов
@@ -63,55 +61,6 @@ docker-compose up -d --build
 - Упрощение текстов до целевого уровня HSK
 - Замена сложных слов на более простые
 - Сохранение контекста
-
-### 4. База данных
-- SQLite (для разработки)
-- PostgreSQL (для продакшена)
-
-## Запуск
-
-### Вариант 1: Docker Compose (рекомендуется)
-
-```bash
-# Автоматически
-./start.sh        # Linux/Mac
-start.bat         # Windows
-
-# Или вручную
-docker-compose up -d --build
-```
-
-Проверка статуса:
-```bash
-docker-compose ps
-docker-compose logs -f
-```
-
-Остановка:
-```bash
-docker-compose down
-```
-
- Полная документация: [DOCKER_INSTRUCTION.md](DOCKER_INSTRUCTION.md), [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
-
-### Вариант 2: Локальный запуск
-
-#### FastAPI
-```bash
-cd C:\vscode\Language_assist
-python -m venv venv
-venv\Scripts\activate  # Windows
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-```
-
-#### Go микросервис
-```bash
-cd analyzer-go
-go run main.go
-```
-
-## API Endpoints
 
 ### Health Check
 ```
