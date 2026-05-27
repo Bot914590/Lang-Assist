@@ -6,17 +6,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Поддержка SQLite для разработки и PostgreSQL для продакшена
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "sqlite:///./user.db"
 )
-
-# Для PostgreSQL раскомментировать:
-# DATABASE_URL = os.getenv(
-#     "DATABASE_URL",
-#     "postgresql://user:password@localhost:5432/langdb"
-# )
 
 connect_args = {}
 if DATABASE_URL.startswith("sqlite"):
@@ -34,7 +27,6 @@ Base = declarative_base()
 
 
 def get_db():
-    """Dependency для получения сессии БД."""
     db = SessionLocal()
     try:
         yield db
@@ -43,8 +35,6 @@ def get_db():
 
 
 def init_db():
-    """Инициализация таблиц БД."""
-    # Импортируем модели для регистрации
-    from models import models  # noqa: F401
+    from models import models  
 
     Base.metadata.create_all(engine)
